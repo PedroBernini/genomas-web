@@ -1,39 +1,23 @@
 import numpy as np
 import random
-import os
-from sklearn.neural_network import MLPRegressor
-from joblib import dump, load
+import keras
+from keras.models import Sequential
+from keras.layers import Dense
 
-class Jogador(object):
-    def __init__(self, permutation_size, hidden_size = 100, gamma = 0.9, temperature = 50, movesLimit = 70, memoryCapacity = 30):
+
+class Dqn(object):
+    def __init__(self, permutation_size, gamma = 0.99, temperature = 50, movesLimit = 20, memoryCapacity = 30):
         self.permutation_size = permutation_size
         self.startState = self.randomState()
         self.gamma = gamma
         self.temperature = temperature
         self.memoryCapacity = memoryCapacity
         self.movesLimit = movesLimit
-        self.model = MLPRegressor(hidden_layer_sizes = (hidden_size,),
-                                  activation ='relu',
-                                  solver ='adam',
-                                  warm_start = True,
-                                  learning_rate_init = 0.001)
-        self.initialFit()
-
-    def initialFit(self):
-        entry = list(range(0, self.permutation_size * 2))
-        self.model.fit([entry], [0])
-        
-    def setTemperature(self, temperature):
-        self.temperature = temperature
-    
-    def setStartState(self, startState):
-        self.startState = startState
-
-    def setMemoryCapacity(self, memoryCapacity):
-        self.memoryCapacity = memoryCapacity
-    
-    def setMovesLimit(self, movesLimit) :
-        self.movesLimit = movesLimit
+        self.bkpReversals = False
+        self.model = Sequential()
+        self.model.add(Dense(600, activation='relu', input_shape=(permutation_size * 2,)))
+        self.model.add(Dense(1, activation='tanh'))
+        self.model.compile(optimizer='adam', loss='mean_squared_error', metrics=['accuracy'])
 
     def identity(self):
         identity = []
@@ -52,6 +36,20 @@ class Jogador(object):
             return True
         else :
             return False
+    
+    def getBreakPoints(self, permutation):
+        bkpMap = []
+        if(permutation[0]!= 1):
+            bkpMap.append(0)
+            
+        if(permutation[len(permutation) - 1] != len(permutation)):
+            bkpMap.append(len(permutation))
+            
+        for i in range(0, len(permutation)-1) :
+            if (self.isAdjacent(permutation[i], permutation[i+1]) is False):
+                bkpMap.append(i+1)
+                
+        return bkpMap
     
     def getNumBkp(self, pi) :
         numBkp = 0
@@ -89,17 +87,26 @@ class Jogador(object):
             j = temp
         for k in range(i,j+1):
             strip.append(resultReversal[k]) 
-        strip.reverse();
+        strip.reverse()
         for k in range(i,j+1):
             resultReversal[k] = strip[k-i]
         return resultReversal
 
     def getSigmas(self, pi):
-        reversals = self.numberReversals(len(pi))
-        sigmas = []
-        for rev in reversals:
-            sigmas.append(self.reversal(rev[0], rev[1], pi))
-        return sigmas
+        if self.bkpReversals == False:
+            reversals = self.numberReversals(len(pi))
+            sigmas = []
+            for rev in reversals:
+                sigmas.append(self.reversal(rev[0], rev[1], pi))
+            return sigmas
+        else:
+            reversals = self.numberReversals(len(pi))
+            sigmas = []
+            breakpoints = self.getBreakPoints(pi)
+            for rev in reversals:
+                if rev[0] in breakpoints and (rev[1] + 1) in breakpoints:
+                    sigmas.append(self.reversal(rev[0], rev[1], pi))
+            return sigmas
 
     def join(self, pi, sigma):
         state = pi + sigma
@@ -113,7 +120,12 @@ class Jogador(object):
             temperature = 100
         temperature = temperature / 100
         choices.remove(intention)
-        escolha = random.choice(choices)
+        
+        if choices == []:
+            return intention
+        else:
+            escolha = random.choice(choices)
+            
         result = np.random.choice(a = [1, 2], size = 1, replace = True,
                                    p = [temperature, (1 - temperature)])
         if result == 1:
@@ -122,18 +134,10 @@ class Jogador(object):
             return escolha
         
     def saveNetwork(self, path):
-        dump(self.model, path) 
-        if os.path.isfile(path):
-            print("Rede salva com sucesso!")
-        else:
-            print("Erro ao salvar a rede!")
+        pass
             
     def loadNetwork(self, path):
-        if os.path.isfile(path):
-            self.model = load(path)
-            print("Rede carregada com sucesso!")
-        else:
-            print("Erro ao carregar a rede!")
+        pass
                     
     def runEpocas(self, length, oneFit = False):
         if not oneFit:
@@ -149,7 +153,7 @@ class Jogador(object):
                     sigmas = self.getSigmas(pi)
                     for sigma in sigmas:
                         state = self.join(pi, sigma)
-                        valueExit = self.model.predict([state])
+                        valueExit = self.model.predict(np.array([state]))[0]
                         results.append(valueExit[0])
                         choices.append(sigma)
                     biggerScore = max(results)
@@ -172,7 +176,7 @@ class Jogador(object):
                             score = (float)(self.gamma * tableScore[i+1][2])
                         targets.append(score)
                     try:
-                        self.model.fit(inputs, targets)
+                        self.model.fit(np.array(inputs), np.array(targets))
                     except:
                         pass
                     print("Chegou na Identidade =)")
@@ -192,7 +196,7 @@ class Jogador(object):
                     sigmas = self.getSigmas(pi)
                     for sigma in sigmas:
                         state = self.join(pi, sigma)
-                        valueExit = self.model.predict([state])
+                        valueExit = self.model.predict(np.array([state]))[0]
                         results.append(valueExit[0])
                         choices.append(sigma)
                     biggerScore = max(results)
@@ -224,19 +228,20 @@ class Jogador(object):
             print("Treinando...")
             for fit in fits: 
                 try:
-                    self.model.fit(fit[0], fit[1])
+                    self.model.fit(np.array(fit[0]), np.array(fit[1]))
                 except:
                     pass
                 
     def bkpTrain(self, repetitions):
+        inputs = []
+        targets = []
         for repetition in range(repetitions):
             print("Rodada:", repetition + 1, "/", repetitions)
             pi = self.randomState()
             bkpPi = self.getNumBkp(pi)
             sigmas = self.getSigmas(pi)
             score = None
-            inputs = []
-            targets = []
+            
             for sigma in sigmas:
                 bkpSigma = self.getNumBkp(sigma)
                 diference = bkpPi - bkpSigma
@@ -249,7 +254,8 @@ class Jogador(object):
                 entry = self.join(pi, sigma)
                 inputs.append(entry)
                 targets.append(score)
-            self.model.fit(inputs, targets)
+        print("Treinando...")
+        self.model.fit(np.array(inputs), np.array(targets))
             
     def easyTrain(self, distance, repetitions):
         for repetition in range(repetitions):
@@ -285,14 +291,14 @@ class Jogador(object):
                 inputs.append(state)
                 score = tableScore[i][2]
                 targets.append(score)
-                self.model.fit(inputs, targets)
+                self.model.fit(np.array(inputs), np.array(targets))
             
     def goIdentity(self, start):
         pi = start
         tableScore = []
         qtdReversoes = 0
         movimentos = 0
-        while (self.isIdentity(pi) == False and movimentos < 50):
+        while (self.isIdentity(pi) == False and movimentos < 2*self.permutation_size):
             movimentos += 1
             qtdReversoes += 1
             results = []
@@ -300,7 +306,7 @@ class Jogador(object):
             sigmas = self.getSigmas(pi)
             for sigma in sigmas:
                 state = self.join(pi, sigma)
-                valueExit = self.model.predict([state])
+                valueExit = self.model.predict(np.array([state]))[0]
                 results.append(valueExit[0])
                 choices.append(sigma)
             biggerScore = max(results)
@@ -308,7 +314,7 @@ class Jogador(object):
             nextState = intention
             tableScore.append((pi, nextState, biggerScore))
             pi = nextState
-        if movimentos < 50:
+        if movimentos < 2*self.permutation_size:
             print("\nEstado inicial", start)
             print("Caminho Percorrido: ")
             for el in tableScore:
@@ -316,12 +322,25 @@ class Jogador(object):
             print("Total de reversões:", qtdReversoes)
         else:
             print("Rede não convergiu!")
+        
+    
+    
 # ----------------------------------------------------------------
 
-idiota = Jogador(8)
-idiota.runEpocas(100000, True)
-idiota.saveNetwork("redePorcaria2019.joblib")
+def getAllScores(model):
+    permutations = getAllPermutations(3)
+    scores = []
+    for permutation in permutations:
+        sigmas = getAllSigmas(permutation)
+        scoresSigmas = []
+        for sigma in sigmas:
+            state = join(permutation, sigma) 
+            score = model.predict(np.array([state]))[0][0]
+            scoresSigmas.append((permutation, sigma, score))
+        scores.append(scoresSigmas)
+    return scores
 
-
-
-
+jogador = Dqn(3)
+jogador.runEpocas(1)
+for el in getAllScores(jogador.model):
+    print(el)
