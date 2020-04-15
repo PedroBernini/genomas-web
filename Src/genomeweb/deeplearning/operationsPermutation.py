@@ -13,10 +13,6 @@ def getAllBreakPoints(permutation):
     return breakpoints
 
 
-def getIdentity(n):
-    return [i for i in range(1, n + 1)]
-
-
 def getAllReversals(n):
     return [(i, j) for i in range(0, n) for j in range(i + 1, n)]
 
@@ -26,18 +22,23 @@ def getAllPermutations(n):
 
 
 def getAllSigmas(permutation):
-    reversals = getAllReversals(len(permutation))
-    return [applyReversal(permutation, rev[0], rev[1]) for rev in reversals]
+    return [applyReversal(permutation, rev[0], rev[1]) for rev in getAllReversals(len(permutation))]
+
+
+def getAllScores(model):
+    return [[(permutation, sigma, model.predict(np.array([join(permutation, sigma)]))[0][0]) for sigma in getAllSigmas(permutation)] for permutation in getAllPermutations(3)]
 
 
 def getSigmasProtectionBreakPoint(permutation):
-    reversals = getAllReversals(len(permutation))
-    breakpoints = getAllBreakPoints(permutation)
-    return [applyReversal(permutation, rev[0], rev[1]) for rev in reversals if rev[0] in breakpoints and (rev[1] + 1) in breakpoints]
+    return [applyReversal(permutation, rev[0], rev[1]) for rev in getAllReversals(len(permutation)) if rev[0] in breakpoints and (rev[1] + 1) in getAllBreakPoints(permutation)]
 
 
 def getNumberBreakPoints(permutation) :
     return len(getAllBreakPoints)
+
+
+def getIdentity(n):
+    return [i for i in range(1, n + 1)]
 
 
 def isIdentity(permutation):
@@ -69,10 +70,10 @@ def applyReversal(permutation, i, j):
     return permutation
 
 
-def nextByMarkovDecisionProcess(choices, intention, temperature):
+def nextByPermutationMarkovDecisionProcess(choices, intention, temperature):
     if choices == []:
         return intention
     temperature = temperature / 100
     result = np.array([intention, random.choice(choices)])
-    index = np.random.choice(a = [0, 1], size = 1, replace = True, p = [0.5, 0.5])
+    index = np.random.choice(a = [0, 1], size = 1, replace = True, p = [temperature, 1 - temperature])
     return result[index].tolist()[0]

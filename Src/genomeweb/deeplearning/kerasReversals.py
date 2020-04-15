@@ -322,25 +322,8 @@ class Dqn(object):
             print("Total de reversões:", qtdReversoes)
         else:
             print("Rede não convergiu!")
-        
-    
-    
-# ----------------------------------------------------------------
-
-def getAllScores(model):
-    permutations = getAllPermutations(3)
-    scores = []
-    for permutation in permutations:
-        sigmas = getAllSigmas(permutation)
-        scoresSigmas = []
-        for sigma in sigmas:
-            state = join(permutation, sigma) 
-            score = model.predict(np.array([state]))[0][0]
-            scoresSigmas.append((permutation, sigma, score))
-        scores.append(scoresSigmas)
-    return scores
 
 jogador = Dqn(3)
-jogador.runEpocas(1)
+jogador.runEpocas(20)
 for el in getAllScores(jogador.model):
     print(el)
