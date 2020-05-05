@@ -1,1 +1,3 @@
-console.log('funcionou');
+function gerarNovaRede() {
+    alert("hlelo")
+}

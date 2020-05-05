@@ -3,6 +3,78 @@
 {% block title %}Histórico de Pesquisas{% endblock %}
 
 {% block content %}
-HOME
-<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+<div class="world">
+    <div style="display: flex;">
+        <div class="permutation">
+            <span>1</span>
+            <span>2</span>
+            <span>3</span>
+            <div class="policy">
+                <p>Política:</p>
+                <div><i id="policy_123" class="arrow up"></i></p></div>
+            </div>
+        </div>
+        <hr class="hr-mid">
+        <div class="permutation">
+            <span>2</span>
+            <span>1</span>
+            <span>3</span>
+            <div class="policy">
+                <p>Política:</p>
+                <div><i id="policy_213" class="arrow up"></i></p></div>
+            </div>
+        </div>
+        <hr class="hr-mid">
+        <div class="permutation">
+            <span>2</span>
+            <span>3</span>
+            <span>1</span>
+            <div class="policy">
+                <p>Política:</p>
+                <div><i id="policy_231" class="arrow up"></i></p></div>
+            </div>
+        </div>
+    </div>
+    
+    <div style="display: flex; height: 300px;">
+        <hr class="hr-center">
+        <hr class="hr-center">
+        <hr class="hr-center">
+    </div>
+    <hr class="hr-x1">
+    <hr class="hr-x2">
+    
+    <div style="display: flex;">
+        <div class="permutation">
+            <span>1</span>
+            <span>3</span>
+            <span>2</span>
+            <div class="policy">
+                <p>Política:</p>
+                <div><i id="policy_132" class="arrow up"></i></p></div>
+            </div>
+        </div>
+        <hr class="hr-mid">
+        <div class="permutation">
+            <span>3</span>
+            <span>1</span>
+            <span>2</span>
+            <div class="policy">
+                <p>Política:</p>
+                <div><i id="policy_312" class="arrow up"></i></p></div>
+            </div>
+        </div>
+        <hr class="hr-mid">   
+        <div class="permutation">
+            <span>3</span>
+            <span>2</span>
+            <span>1</span>
+            <div class="policy">
+                <p>Política:</p>
+                <div><i id="policy_321" class="arrow up"></i></p></div>
+            </div>
+        </div>
+    </div>
+    <button onclick="gerarNovaRede()" class="btn btn-primary">Gerar Nova Rede</button>
+</div>
 {% endblock %}

@@ -21,8 +21,8 @@ def getAllPermutations(n):
     return [list(permutation) for permutation in itertools.permutations([i for i in range(1, n + 1)])]
 
 
-def getAllSigmas(permutation):
-    return [applyReversal(permutation, rev[0], rev[1]) for rev in getAllReversals(len(permutation))]
+def getAllSigmas(permutation, operation):
+    return [applyReversal(permutation, rev[0], rev[1]) for rev in operation(len(permutation))]
 
 
 def getAllScores(model):
@@ -73,7 +73,7 @@ def applyReversal(permutation, i, j):
 def nextByPermutationMarkovDecisionProcess(choices, intention, temperature):
     if choices == []:
         return intention
-    temperature = temperature / 100
+    choices.remove(intention)
     result = np.array([intention, random.choice(choices)])
     index = np.random.choice(a = [0, 1], size = 1, replace = True, p = [temperature, 1 - temperature])
     return result[index].tolist()[0]
