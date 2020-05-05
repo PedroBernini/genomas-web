@@ -1,9 +1,9 @@
 # Este arquivo contém os algoritmos para treinamentos das Redes Neurais
 
 import numpy as np
-import operationsPermutation
-import neuralNetworks
 import keras
+from . import operationsPermutation
+from . import neuralNetworks
 from keras.models import Sequential
 from keras.layers import Dense
 from datetime import datetime
@@ -27,8 +27,8 @@ def getRouteScore(permutation, dqn):
 
         nextPermutation = operationsPermutation.nextByPermutationMarkovDecisionProcess(sigmas, intention, dqn.temperature)
         # ARRUMAR ESTA PARTE QUE TA LIXO
-        if nextPermutation
-        routeScore.append((permutation, nextPermutation, scores[permutations.index(permutation)])) # Rever a necessidade do bigger
+        #if nextPermutation --->> scores[permutations.index(permutation)]
+        routeScore.append((permutation, nextPermutation, biggerScore)) # Rever a necessidade do bigger
         permutation = nextPermutation
     
     return routeScore, permutation

@@ -75,6 +75,7 @@
             </div>
         </div>
     </div>
-    <button onclick="gerarNovaRede()" class="btn btn-primary">Gerar Nova Rede</button>
+        {% csrf_token %}
+        <button onclick="gerarNovaRede()" class="btn btn-primary">Gerar Nova Rede</button>
 </div>
 {% endblock %}
