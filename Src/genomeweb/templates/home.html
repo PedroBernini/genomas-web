@@ -75,7 +75,13 @@
             </div>
         </div>
     </div>
+
+    <div>
         {% csrf_token %}
         <button onclick="gerarNovaRede()" class="btn btn-primary">Gerar Nova Rede</button>
+        <button onclick="atualizarPoliticas()" class="btn btn-warning">Atualizar Políticas</button>
+        <input class="form-control" id="epoch" placeholder="Épocas" style="width: 100px;">
+        <button onclick="treinarRede()" class="btn btn-success">Treinar Rede</button>
+    </div>
 </div>
 {% endblock %}

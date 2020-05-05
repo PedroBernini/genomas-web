@@ -26,7 +26,7 @@ def getAllSigmas(permutation, operation):
 
 
 def getAllScores(model):
-    return [[(permutation, sigma, model.predict(np.array([join(permutation, sigma)]))[0][0]) for sigma in getAllSigmas(permutation)] for permutation in getAllPermutations(3)]
+    return [[(permutation, sigma, model.predict(np.array([join(permutation, sigma)]))[0][0]) for sigma in getAllSigmas(permutation, getAllReversals)] for permutation in getAllPermutations(3)]
 
 
 def getSigmasProtectionBreakPoint(permutation):
