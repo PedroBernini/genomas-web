@@ -323,7 +323,6 @@ class Dqn(object):
         else:
             print("Rede não convergiu!")
 
-jogador = Dqn(3)
-jogador.runEpocas(20)
-for el in getAllScores(jogador.model):
-    print(el)
+jogador = Dqn(5)
+jogador.bkpTrain(1000)
+jogador.goIdentity(jogador.randomState())
