@@ -1,17 +1,11 @@
 # Este arquivo contém os algoritmos para treinamentos das Redes Neurais
 
 try:
-    from . import operationsPermutation
-    from . import neuralNetworks
+    from base.deeplearning import operationsPermutation, neuralNetworks
 except:
-    import operationsPermutation
-    import neuralNetworks
+    import operationsPermutation, neuralNetworks
 import numpy as np
-import keras
-from keras.models import Sequential
-from keras.layers import Dense
 from datetime import datetime
-
 
 def getScoreForAllSigmas(permutation, sigmas, model):
     return [model.predict(np.array([operationsPermutation.join(permutation, sigma)]))[0][0] for sigma in sigmas]

@@ -1,5 +1,4 @@
-import operationsPermutation, neuralNetworks, operationsWorld
-import numpy as np
+from base.deeplearning import operationsPermutation, neuralNetworks, operationsWorld
 
 deepQNetwork = neuralNetworks.DqnKeras(4)
 operationsWorld.trainWithBreakPoints(deepQNetwork, 50000)

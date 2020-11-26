@@ -1,8 +1,8 @@
 from django.shortcuts import render
 from django.http import JsonResponse
-from genomeweb.deeplearning import neuralNetworks
-from genomeweb.deeplearning import operationsPermutation
-from genomeweb.deeplearning import operationsWorld
+from base.deeplearning import neuralNetworks
+from base.deeplearning import operationsPermutation
+from base.deeplearning import operationsWorld
 
 def home(request):
     return render(request, 'home.html')

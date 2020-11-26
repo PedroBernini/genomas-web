@@ -11,4 +11,4 @@ Aplicação WEB para Deep Learning em Rearranjo de Genomas.
 - numpy
 - sklearn
 - keras
-- tensorflow - Version = 2.0.0
+- tensorflow
