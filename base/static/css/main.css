@@ -1,0 +1,46 @@
+/* Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap'); /* font-family: 'Roboto', sans-serif; */
+@import url('https://fonts.googleapis.com/css2?family=Sarabun&display=swap'); /* font-family: 'Sarabun', sans-serif; */
+
+:root {
+    --primary-color:#444c90;
+    --secondary-color: #4285f4;
+}
+
+body {
+    font-family: 'Roboto', sans-serif;
+}
+
+td {
+    height: 50px; 
+    width: 50px;
+}
+
+#tableDatasets td {
+    text-align: center; 
+    vertical-align: middle;
+}
+
+.font-20 {
+    font-size: 20px!important;
+}
+
+.background-primary-color {
+    background-color: var(--primary-color);
+}
+
+.text-primary-color {
+    color:var(--primary-color);
+}
+
+.text-secondary-color {
+    color:var(--primary-color);
+}
+
+.text-white {
+    color: white;
+}
+
+.active-link {
+    color: #4cff5a!important;
+}

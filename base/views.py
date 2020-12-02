@@ -1,71 +1,157 @@
 from django.shortcuts import render
 from django.http import JsonResponse
-from base.deeplearning import neuralNetworks
-from base.deeplearning import operationsPermutation
-from base.deeplearning import operationsWorld
+from base.algorithms.deeplearning import neuralNetworks, operationsPermutation, operationsWorld, trainer
+from base.algorithms import kececioglu
+from base import models
 
-def home(request):
-    return render(request, 'home.html')
-    
+from keras import backend as K
 
-def gerar_nova_rede(request):
-    if request.method == 'POST':
-        deepQNetwork = neuralNetworks.DqnKeras(3)
-        deepQNetwork.saveNetwork('genomeweb/redes/network.h5')
-        return JsonResponse({'msg': 'Rede gerada com sucesso!'}, status=200)
+from os import listdir
+from os.path import isfile, join
 
-dicionario = {
-    '[1, 2, 3, 2, 1, 3]' : 'arrow right',
-    '[1, 2, 3, 3, 2, 1]' : 'arrow down-right',
-    '[1, 2, 3, 1, 3, 2]' : 'arrow down',
-    '[1, 3, 2, 3, 1, 2]' : 'arrow right',
-    '[1, 3, 2, 2, 3, 1]' : 'arrow up-right',
-    '[1, 3, 2, 1, 2, 3]' : 'arrow up',
-    '[2, 1, 3, 1, 2, 3]' : 'arrow left',
-    '[2, 1, 3, 3, 1, 2]' : 'arrow down',
-    '[2, 1, 3, 2, 3, 1]' : 'arrow right',
-    '[2, 3, 1, 3, 2, 1]' : 'arrow down',
-    '[2, 3, 1, 1, 3, 2]' : 'arrow down-left',
-    '[2, 3, 1, 2, 1, 3]' : 'arrow left',
-    '[3, 1, 2, 1, 3, 2]' : 'arrow left',
-    '[3, 1, 2, 2, 1, 3]' : 'arrow up',
-    '[3, 1, 2, 3, 2, 1]' : 'arrow right',
-    '[3, 2, 1, 2, 3, 1]' : 'arrow up',
-    '[3, 2, 1, 1, 2, 3]' : 'arrow up-left',
-    '[3, 2, 1, 3, 1, 2]' : 'arrow left'
-}
+PATH_NETWORKS = 'base/algorithms/deeplearning/redes/'
+
+def algorithmsView(request):
+    datasets = models.DataSetPermutation.objects.all()
+    networkArchives = [f for f in listdir(PATH_NETWORKS) if
+                    isfile(join(PATH_NETWORKS, f))]
+    context = {
+        'datasets': datasets,
+        'networkArchives': networkArchives
+    }
+    return render(request, 'algorithms.html', context)
+
+def datasetView(request):
+    datasets = models.DataSetPermutation.objects.all()
+    context = {
+        'datasets': datasets
+    }
+    return render(request, 'dataset.html', context)
 
 
-def atualizar_politicas(request):
-    if request.method == 'POST':
-        deepQNetwork = neuralNetworks.DqnKeras(3)
-        deepQNetwork.loadNetwork('genomeweb/redes/network.h5')
-        scores = operationsPermutation.getAllScores(deepQNetwork.model)
-        politicas = {}
-        for score in scores:
-            permutation = score[0][0]
-
-            result = score[0][2]
-            position = 0
-            
-            if score[1][2] > result:
-                result = score[1][2]
-                position = 1
-
-            if score[2][2] > result:
-                result = score[2][2]
-                position = 2
-            
-            politicas[str(permutation)] = dicionario[str(score[position][0] + score[position][1])]
-
-        return JsonResponse({'msg': 'Políticas atualizada com sucesso!', 'politicas': politicas}, status=200)
+def trainingView(request):
+    return render(request, 'training.html')
 
 
-def treinar_rede(request):
-    if request.method == 'POST':
-        epochs = int(request.POST.get('epochs'))
-        deepQNetwork = neuralNetworks.DqnKeras(3)
-        deepQNetwork.loadNetwork('genomeweb/redes/network.h5')
-        operationsWorld.worldTrain(deepQNetwork, epochs)
-        deepQNetwork.saveNetwork('genomeweb/redes/network.h5')
-        return JsonResponse({'msg': 'Rede treinada com sucesso!'}, status=200)
+def createDataset(request):
+    tamanho = int(request.POST.get('tamanho'))
+    quantidade = int(request.POST.get('quantidade'))
+    minBkp = int(request.POST.get('minBkp'))
+    maxBkp = int(request.POST.get('maxBkp'))
+    nome = 'Dataset_' + str(tamanho) + '_' + str(quantidade) + '_' + str(minBkp) + '_' + str(maxBkp)
+
+    try:
+        permutations = operationsPermutation.generateDataSetPermutations(tamanho, quantidade, minBkp, maxBkp)
+    except:
+        return JsonResponse({'msg': 'Problemas em gerar estados!'}, status=400)
+
+    textPermitations = str(permutations).replace('[[', '').replace(']]', '').replace(' ', '').replace('],[', ';')
+    dataset = models.DataSetPermutation.objects.create(
+        nome = nome,
+        permutacoes = textPermitations,
+        tamanho_permutacao = tamanho,
+        quantidade = quantidade,
+        minimo_breakpoints = minBkp,
+        maximo_breakpoints = maxBkp
+    )
+    dataset.save()
+    datasetInfo = {
+        'id': dataset.id,
+        'nome': nome,
+        'tamanho': tamanho,
+        'quantidade': quantidade,
+        'minBkp': minBkp,
+        'maxBkp': maxBkp
+    }
+    return JsonResponse({'msg': 'Dataset criado com sucesso!', 'dataset': datasetInfo}, status=200)
+
+
+def createNetwork(request):
+    tamanhoRede = int(request.POST.get('tamanhoRede'))
+    epocas = int(request.POST.get('epocas'))
+    lossFunction = request.POST.get('lossFunction')
+    optimizer = request.POST.get('optimizer')
+    nomeRede = 'Network_ ' + str(tamanhoRede) + '_' + str(epocas) + '_' + lossFunction + '_' + optimizer
+
+    K.clear_session()
+    try:
+        dqn = trainer.createDqn(tamanhoRede, lossFunction=lossFunction, optimizerFunction=optimizer)
+    except:
+        return JsonResponse({'msg': 'Problemas ao criar a rede!'}, status=400)
+
+    try:
+        trainer.trainNetwork(dqn, epocas)
+    except:
+        return JsonResponse({'msg': 'Problemas durante o treinamento!'}, status=400)
+
+    try:
+        trainer.saveNetwork(dqn, nomeRede)
+    except:
+        return JsonResponse({'msg': 'Problemas durante o salvamento da rede!'}, status=400)
+
+    return JsonResponse({'msg': 'Nova rede criada!'}, status=200)
+
+def deleteDataset(request):
+    idDataset = request.POST.get('idDataset')
+    try:
+        dataset = models.DataSetPermutation.objects.filter(pk=idDataset).first()
+        dataset.delete()
+        return JsonResponse({'msg': 'Dataset deletado com sucesso!'}, status=200)
+    except:
+        return JsonResponse({'msg': 'Problemas ao deletar dataset!'}, status=400)
+
+
+def kececiogluAlgorithm(request):
+    idDataset = request.POST.get('idDataset')
+
+    try:
+        dataset = models.DataSetPermutation.objects.filter(pk=idDataset).first()
+        textPermutations = dataset.permutacoes
+        permutations = [list(map(int, string.split(','))) for string in textPermutations.split(';')]
+
+        aproximations = []
+        for permutation in permutations:
+            lowerBound = operationsPermutation.getLowerBound(permutation)
+            realDistance = kececioglu.getDistanceToIdentity(permutation)
+            if realDistance:
+                aproximations.append(realDistance / lowerBound)
+
+        mediaAproximation = sum(aproximations) / len(aproximations)
+        return JsonResponse({'msg': 'Teste finalizado!  Aproximação do algoritmo Kececioglu: ' + str(mediaAproximation)},
+                            status=200)
+    except:
+        return JsonResponse({'msg': 'Problemas durante o teste!'}, status=400)
+
+
+
+def reinforcementAlgorithm(request):
+    idDataset = request.POST.get('idDataset')
+    modelo = request.POST.get('modelo')
+
+    try:
+        dataset = models.DataSetPermutation.objects.filter(pk=idDataset).first()
+        textPermutations = dataset.permutacoes
+        tamanhoPermutacao = dataset.tamanho_permutacao
+
+        K.clear_session()
+        dqn = neuralNetworks.DqnKeras(tamanhoPermutacao)
+        try:
+            dqn.loadNetwork(PATH_NETWORKS + modelo)
+        except ValueError:
+            return JsonResponse({'msg': 'O modelo possui tamanho da permutação diferente do Dataset!'}, status=400)
+        permutations = [list(map(int, string.split(','))) for string in textPermutations.split(';')]
+
+        aproximations = []
+        for permutation in permutations:
+            lowerBound = operationsPermutation.getLowerBound(permutation)
+            realDistance = operationsWorld.getDistanceToIdentity(permutation, dqn)
+            if realDistance:
+                aproximations.append(realDistance / lowerBound)
+
+        if len(aproximations) < (len(permutations) / 2):
+            return JsonResponse({'info': 'A rede não convergiu. Então ainda é incapaz de apontar as distâncias.'}, status=200)
+
+        mediaAproximation = sum(aproximations) / len(aproximations)
+        return JsonResponse({'msg': 'Teste finalizado! Aproximação do algoritmo de Reinforcement Learning: ' + str(mediaAproximation)}, status=200)
+    except:
+        return JsonResponse({'msg': 'Problemas durante o teste!'}, status=400)

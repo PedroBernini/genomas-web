@@ -1,0 +1,80 @@
+{% extends 'default.html' %}
+{% load static %}
+
+{% block title %}Datasets{% endblock %}
+
+{% block styles %}
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'js/dataset.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="row mt-4 justify-content-center">
+                <div class="col-md-2">
+                    <div class="form-group">
+                        <label class="font-weight-bold" for="tamanho">Tamanho</label>
+                        <input class="form-control" id="tamanho">
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="form-group">
+                        <label class="font-weight-bold" for="quantidade">Quantidade</label>
+                        <input class="form-control" id="quantidade">
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="form-group">
+                        <label class="font-weight-bold" for="min-bkp">MIN Breakpoints</label>
+                        <input class="form-control" id="min-bkp">
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="form-group">
+                        <label class="font-weight-bold" for="max-bkp">MAX Breakpoints</label>
+                        <input class="form-control" id="max-bkp">
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-2 justify-content-center">
+                <div class="col-md-4 text-center">
+                    <button type="button" onclick="createDataset()" class="btn btn-primary">Criar Dataset</button>
+                </div>
+            </div>
+
+            <div class="row mt-5 mb-4">
+                <div class="col-md-12">
+                    <table id="tableDatasets" class="table table-bordered text-center" width="100%">
+                    <thead>
+                        <tr>
+                            <th class="th-sm font-weight-bold">Nome</th>
+                            <th class="th-sm font-weight-bold">Tamanho (N)</th>
+                            <th class="th-sm font-weight-bold">Quantidade</th>
+                            <th class="th-sm font-weight-bold">MIN Breakpoints</th>
+                            <th class="th-sm font-weight-bold">MAX Breakpoints</th>
+                            <th class="th-sm font-weight-bold">Deletar</th>
+                        </tr>
+                    </thead>
+                    <tbody id="contentDatasets">
+                        {% for dataset in datasets %}
+                        <tr id="dataset_{{ dataset.id }}">
+                            <td>{{ dataset.nome }}</td>
+                            <td>{{ dataset.tamanho_permutacao }}</td>
+                            <td>{{ dataset.quantidade }}</td>
+                            <td>{{ dataset.minimo_breakpoints }}</td>
+                            <td>{{ dataset.maximo_breakpoints }}</td>
+                            <td><a type="button" data-id="{{ dataset.id }}" onclick="deleteDataset(this.getAttribute('data-id'))"><i class="fas fa-trash-alt fa-2x text-danger"></i></a></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

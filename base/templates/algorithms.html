@@ -1,0 +1,53 @@
+{% extends 'default.html' %}
+{% load static %}
+
+{% block title %}Algorithms{% endblock %}
+
+{% block styles %}
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'js/algorithms.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mt-4 justify-content-center">
+        <div class="col-md-3">
+            <div class="form-group">
+                <label class="font-weight-bold" for="datasetSelect">Dataset</label>
+                <select class="form-control" id="datasetSelect">
+                    <option hidden disabled selected value="0">Selecione</option>
+                    {% for dataset in datasets %}
+                    <option value="{{ dataset.id }}">{{ dataset.nome }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4 justify-content-center">
+        <div class="col-md-3 text-center">
+            <button type="button" onclick="kececiogluAlgorithm()" class="btn btn-primary">Kececioglu Algorithm</button>
+        </div>
+    </div>
+
+    <div class="row mt-5 mb-4 justify-content-center">
+        <div class="col-md-3 text-center align-self-center">
+            <button type="button" onclick="reinforcementAlgorithm()" class="btn btn-primary">Reinforcement Algorithm</button>
+        </div>
+        <div class="col-md-5">
+            <div class="form-group">
+                <label class="font-weight-bold" for="modeloSelect">Modelo de Rede</label>
+                <select class="form-control" id="modeloSelect">
+                    <option hidden disabled selected value="0">Selecione</option>
+                    {% for archive in networkArchives %}
+                    <option value="{{ archive }}">{{ archive }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        
+    </div>
+</div>
+{% endblock %}

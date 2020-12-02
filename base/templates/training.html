@@ -1,0 +1,67 @@
+{% extends 'default.html' %}
+{% load static %}
+
+{% block title %}Datasets{% endblock %}
+
+{% block styles %}
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'js/training.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="row mt-4 justify-content-center">
+                <div class="col-md-2">
+                    <div class="form-group">
+                        <label class="font-weight-bold" for="tamanhoRede">Tamanho</label>
+                        <input class="form-control" id="tamanhoRede">
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="form-group">
+                        <label class="font-weight-bold" for="epocas">Épocas</label>
+                        <input class="form-control" id="epocas">
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-4 justify-content-center">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label class="font-weight-bold" for="lossFunction">Loss Function</label>
+                        <select class="form-control" id="lossFunction">
+                            <option value="mean_absolute_error">Mean Absolute Error</option>
+                            <option value="logcosh">Logcosh</option>
+                            <option value="mean_squared_error">Mean Squared Error</option>
+                            <option value="mean_absolute_percentage_error">Mean Absolute Percentage Error</option>
+                            <option value="mean_squared_logarithmic_error">Mean Squared Logarithmic Error</option>
+                            
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <label class="font-weight-bold" for="optimizer">Optimizer</label>
+                    <select class="form-control" id="optimizer">
+                        <option value="adam">Adam</option>
+                        <option value="Nadam">Nadam</option>
+                        <option value="RMSprop">RMSprop</option>
+                        <option value="Adadelta">Adadelta</option>
+                        <option value="Adagrad">Adagrad</option>
+                        <option value="Adamax">Adamax</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="row mb-4 mt-2 justify-content-center">
+                <div class="col-md-4 text-center">
+                    <button type="button" onclick="createNetwork()" class="btn btn-primary">Criar Rede</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

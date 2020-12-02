@@ -3,6 +3,25 @@
 import numpy as np
 import itertools
 import random
+import math
+
+
+def generateDataSetPermutations(length, amount, minBkp, maxBkp):
+    if length - minBkp < -1:
+        return None
+    if minBkp > maxBkp:
+        return None
+    permutations = []
+    for k in range(amount):
+        while True:
+            permutation = [i for i in range(1, length + 1)]
+            np.random.shuffle(permutation)
+            numberBreakpoints = getNumberBreakPoints(permutation)
+            if numberBreakpoints >= minBkp and numberBreakpoints <= maxBkp:
+                permutations.append(permutation)
+                break
+    return permutations
+
 
 def getAllBreakPoints(permutation):
     breakpoints = [(i + 1) for i in range(0, len(permutation) - 1) if (isAdjacent(permutation[i], permutation[i+1]) is False)]
@@ -33,8 +52,12 @@ def getSigmasProtectionBreakpoint(permutation, operation):
     return [applyReversal(permutation, rev[0], rev[1]) for rev in operation(len(permutation)) if rev[0] in getAllBreakPoints(permutation) and (rev[1] + 1) in getAllBreakPoints(permutation)]
 
 
-def getNumberBreakPoints(permutation) :
+def getNumberBreakPoints(permutation):
     return len(getAllBreakPoints(permutation))
+
+
+def getLowerBound(permutation):
+    return math.ceil(getNumberBreakPoints(permutation) / 2)
 
 
 def getIdentity(n):

@@ -1,7 +1,7 @@
 # Este arquivo contém os algoritmos para treinamentos das Redes Neurais
 
 try:
-    from base.deeplearning import operationsPermutation, neuralNetworks
+    from base.algorithms.deeplearning import operationsPermutation, neuralNetworks
 except:
     import operationsPermutation, neuralNetworks
 import numpy as np
@@ -33,23 +33,11 @@ def trainModelByBellmanEquation(model, gamma, routeScore):
     if routeScore != []:
         inputs = [operationsPermutation.join(score[0], score[1]) for score in routeScore]
         targets = [1 if(i == len(routeScore) - 1) else (float)(gamma * routeScore[i+1][2]) for i in range(0, len(routeScore))]
-        model.fit(np.array(inputs), np.array(targets),  verbose = 0)
+        model.fit(np.array(inputs), np.array(targets),  verbose=0)
     return model
 
 
 def defaultTrain(dqn, epochs, protectBreakpoints = False):
-    for epoch in range(epochs):
-        t1 = datetime.today()
-        print("Processing Training: {}%".format(100 * epoch//epochs), end="")
-        startPermutation = operationsPermutation.randomState(dqn.permutation_size)
-        routeScore, lastPermutation = getRouteScore(startPermutation, dqn, protectBreakpoints)
-        if operationsPermutation.isIdentity(lastPermutation) == True:
-            trainModelByBellmanEquation(dqn.model, dqn.gamma, routeScore)
-        t2 = datetime.today()
-        print(" - Tempo Restante: {}s".format((t2-t1) * (epochs - epoch)))
-        
-
-def trainWithPenalty(dqn, epochs, protectBreakpoints = False):
     for epoch in range(epochs):
         t1 = datetime.today()
         print("Processing Training: {}%".format(100 * epoch//epochs), end="")
@@ -95,7 +83,6 @@ def goIdentity(permutation, dqn):
         moves += 1
         sigmas = operationsPermutation.getAllSigmas(permutation, operationsPermutation.getAllReversals)
         scores = getScoreForAllSigmas(permutation, sigmas, dqn.model)
-        biggerScore =  max(scores)
         intention = sigmas[scores.index(max(scores))]
         nextPermutation = intention
         routeScore.append((permutation, nextPermutation, scores[sigmas.index(nextPermutation)]))
@@ -114,3 +101,17 @@ def goIdentity(permutation, dqn):
         print("------------------------")
         print("A Rede ainda não convergiu!")
         print("------------------------")
+
+def getDistanceToIdentity(permutation, dqn):
+    moves = 0
+    while (moves < dqn.movesLimit) and (operationsPermutation.isIdentity(permutation) == False):
+        moves += 1
+        sigmas = operationsPermutation.getAllSigmas(permutation, operationsPermutation.getAllReversals)
+        scores = getScoreForAllSigmas(permutation, sigmas, dqn.model)
+        intention = sigmas[scores.index(max(scores))]
+        nextPermutation = intention
+        permutation = nextPermutation
+    if moves < dqn.movesLimit:
+        return moves
+    else:
+        return None
