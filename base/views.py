@@ -146,12 +146,13 @@ def reinforcementAlgorithm(request):
             lowerBound = operationsPermutation.getLowerBound(permutation)
             realDistance = operationsWorld.getDistanceToIdentity(permutation, dqn)
             if realDistance:
-                aproximations.append(realDistance / lowerBound)
+                if (realDistance / lowerBound) <= 2:
+                    aproximations.append(realDistance / lowerBound)
 
-        if len(aproximations) < (len(permutations) / 2):
+        if aproximations == []:
             return JsonResponse({'info': 'A rede não convergiu. Então ainda é incapaz de apontar as distâncias.'}, status=200)
 
         mediaAproximation = sum(aproximations) / len(aproximations)
-        return JsonResponse({'msg': 'Teste finalizado! Aproximação do algoritmo de Reinforcement Learning: ' + str(mediaAproximation)}, status=200)
+        return JsonResponse({'msg': 'Teste finalizado! Aproximação do algoritmo de Reinforcement Learning: \n' + '\nMax: ' + str(max(aproximations)) + '\n' '\nMedia: ' + str(mediaAproximation) + '\n' '\nMin: ' + str(min(aproximations)) + '\n'}, status=200)
     except:
         return JsonResponse({'msg': 'Problemas durante o teste!'}, status=400)
