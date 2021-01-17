@@ -8,6 +8,7 @@ from keras import backend as K
 
 from os import listdir
 from os.path import isfile, join
+from datetime import datetime
 
 PATH_NETWORKS = 'base/algorithms/deeplearning/redes/'
 
@@ -109,15 +110,19 @@ def kececiogluAlgorithm(request):
         textPermutations = dataset.permutacoes
         permutations = [list(map(int, string.split(','))) for string in textPermutations.split(';')]
 
+        t1 = datetime.today()
         aproximations = []
         for permutation in permutations:
             lowerBound = operationsPermutation.getLowerBound(permutation)
             realDistance = kececioglu.getDistanceToIdentity(permutation)
             if realDistance:
                 aproximations.append(realDistance / lowerBound)
+        t2 = datetime.today()
+
+        tempoExecucao = t2 - t1
 
         mediaAproximation = sum(aproximations) / len(aproximations)
-        return JsonResponse({'msg': 'Teste finalizado!  Aproximação do algoritmo Kececioglu: ' + str(mediaAproximation)},
+        return JsonResponse({'msg': 'Teste finalizado!  Aproximação do algoritmo Kececioglu: \n' + '\nMax: ' + str(max(aproximations)) + '\n' '\nMedia: ' + str(mediaAproximation) + '\n' '\nMin: ' + str(min(aproximations)) + '\n' + '\n' '\nTempo de Execução: ' + str(tempoExecucao) + '\n'},
                             status=200)
     except:
         return JsonResponse({'msg': 'Problemas durante o teste!'}, status=400)
@@ -141,6 +146,7 @@ def reinforcementAlgorithm(request):
             return JsonResponse({'msg': 'O modelo possui tamanho da permutação diferente do Dataset!'}, status=400)
         permutations = [list(map(int, string.split(','))) for string in textPermutations.split(';')]
 
+        t1 = datetime.today()
         competitions = []
         aproximations = []
         for permutation in permutations:
@@ -156,6 +162,9 @@ def reinforcementAlgorithm(request):
                     competitions.append(1)
                 else:
                     competitions.append(-1)
+        t2 = datetime.today()
+
+        tempoExecucao = t2 - t1
 
         kececiogluWin = competitions.count(-1) / len(competitions)
         draw = competitions.count(0) / len(competitions)
@@ -165,7 +174,7 @@ def reinforcementAlgorithm(request):
             return JsonResponse({'info': 'A rede não convergiu. Então ainda é incapaz de apontar as distâncias.'}, status=200)
 
         mediaAproximation = sum(aproximations) / len(aproximations)
-        return JsonResponse({'msg': 'Teste finalizado! Aproximação do algoritmo de Reinforcement Learning: \n' + '\nMax: ' + str(max(aproximations)) + '\n' '\nMedia: ' + str(mediaAproximation) + '\n' '\nMin: ' + str(min(aproximations)) + '\n'}, status=200)
+        return JsonResponse({'msg': 'Teste finalizado! Aproximação do algoritmo de Reinforcement Learning: \n' + '\nMax: ' + str(max(aproximations)) + '\n' '\nMedia: ' + str(mediaAproximation) + '\n' '\nMin: ' + str(min(aproximations)) + '\n' + '\n' '\nTempo de Execução: ' + str(tempoExecucao) + '\n'}, status=200)
     except:
         return JsonResponse({'msg': 'Problemas durante o teste!'}, status=400)
 
