@@ -10,6 +10,7 @@ urlpatterns = [
     #Create
     path(r'create_dataset/', views.createDataset, name='create_dataset'),
     path(r'create_network/', views.createNetwork, name='create_network'),
+    path(r'create_dataset_txt/', views.createDatasetTxt, name='create_dataset_txt'),
 
     #Delete
     path(r'delete_dataset/', views.deleteDataset, name='delete_dataset'),

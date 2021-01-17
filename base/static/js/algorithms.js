@@ -2,6 +2,31 @@ $(document).ready(function() {
     $('#navAlgorithms').addClass('active-link');
 });
 
+function createDatasetTxt() {
+
+    var idDataset = $('#datasetSelect').val();
+
+    if(!idDataset) {
+        popWarning('Campo', 'Selecione um dataset!')
+        $('#datasetSelect').focus();
+        return;
+    }
+
+    $.ajax({
+        type: 'POST',
+        url: '/create_dataset_txt/',
+        dataType: 'json',
+        data: {idDataset: idDataset},
+        success: function (data) {
+            popSuccess('Criação de Dataset', data.msg);
+            hideLoader();
+        },
+        error: function (data) {
+            tratarErro(data);
+        }
+    });
+}
+
 function kececiogluAlgorithm() {
     
     var idDataset = $('#datasetSelect').val();

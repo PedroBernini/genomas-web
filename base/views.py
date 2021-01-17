@@ -141,6 +141,7 @@ def reinforcementAlgorithm(request):
             return JsonResponse({'msg': 'O modelo possui tamanho da permutação diferente do Dataset!'}, status=400)
         permutations = [list(map(int, string.split(','))) for string in textPermutations.split(';')]
 
+        competitions = []
         aproximations = []
         for permutation in permutations:
             lowerBound = operationsPermutation.getLowerBound(permutation)
@@ -148,6 +149,17 @@ def reinforcementAlgorithm(request):
             if realDistance:
                 if (realDistance / lowerBound) <= 2:
                     aproximations.append(realDistance / lowerBound)
+                distanceKececioglu = kececioglu.getDistanceToIdentity(permutation)
+                if realDistance == distanceKececioglu:
+                    competitions.append(0)
+                elif realDistance < distanceKececioglu:
+                    competitions.append(1)
+                else:
+                    competitions.append(-1)
+
+        kececiogluWin = competitions.count(-1) / len(competitions)
+        draw = competitions.count(0) / len(competitions)
+        rlWin = competitions.count(1) / len(competitions)
 
         if aproximations == []:
             return JsonResponse({'info': 'A rede não convergiu. Então ainda é incapaz de apontar as distâncias.'}, status=200)
@@ -156,3 +168,18 @@ def reinforcementAlgorithm(request):
         return JsonResponse({'msg': 'Teste finalizado! Aproximação do algoritmo de Reinforcement Learning: \n' + '\nMax: ' + str(max(aproximations)) + '\n' '\nMedia: ' + str(mediaAproximation) + '\n' '\nMin: ' + str(min(aproximations)) + '\n'}, status=200)
     except:
         return JsonResponse({'msg': 'Problemas durante o teste!'}, status=400)
+
+def createDatasetTxt(request):
+    idDataset = request.POST.get('idDataset')
+
+    try:
+        dataset = models.DataSetPermutation.objects.filter(pk=idDataset).first()
+        textPermutations = dataset.permutacoes
+        permutations = [list(map(int, string.split(','))) for string in textPermutations.split(';')]
+        file = open("dataset6_100_13_10_14.txt", "w")
+        for permutation in permutations:
+            file.write(str(permutation) + '\n')
+        file.close()
+        return JsonResponse({'msg': 'Dataset Criado!'}, status=200)
+    except:
+        return JsonResponse({'msg': 'Problemas na criação do dataset!'}, status=400)
